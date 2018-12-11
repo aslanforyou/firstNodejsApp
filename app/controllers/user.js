@@ -4,21 +4,26 @@ const Users = require('../models/user');
 const config = require('../../config/config');
 
 module.exports.getUser = function (req, res, next) {
-
     Users.findOne({username: req.username}, function (error, user) {
         if (error) {
             console.log('...error getting user');
         }
-        res.send({
-            username: user.username,
-            age: user.age,
-            gender: user.gender,
-        })
+        if (user) {
+            res.send({
+                username: user.username,
+                age: user.age,
+                gender: user.gender,
+            })
+        }
+        else {
+            res.send("Can't find user!");
+            console.log('error finding user');
+        }
     })
 };
 
 module.exports.loginUser = function (req, res) {
-    var user_name = req.body.user;
+    var user_name = req.body.username;
     var password = req.body.password;
 
     Users.findOne({username: user_name}, function (error, user) {
@@ -49,7 +54,7 @@ module.exports.loginUser = function (req, res) {
 };
 
 module.exports.createUser = function (req, res) {
-    var user_name = req.body.user;
+    var user_name = req.body.username;
     var password = req.body.password;
     var gender = req.body.gender;
     var age = req.body.age;
@@ -58,7 +63,7 @@ module.exports.createUser = function (req, res) {
         gender = 'не указан'
     }
     if (!age) {
-        age = 'не указан'
+        age = '0'
     }
 
     password = bcrypt.hashSync(password);
@@ -67,11 +72,15 @@ module.exports.createUser = function (req, res) {
         if (err) return handleError(err);
 
         if (raw.n === 0) {
-            var userNew = new Users({username: user_name, password: password, age: age, gender: gender});
-            userNew.save(function (err, userNew) {
-                if (err) return console.error(err);
+            Users.create({username: user_name, password: password, age: age, gender: gender},function (err, userNew) {
+                if (err) {
+                    console.error(err);
+                    return res.status(500).send({
+                    message: 'Wrong data to create user',
+                });}
+
+                res.json({data: 'yes',});
             });
-            res.json({data: 'yes',});
         }
         else {
             res.json({data: 'exists',});
@@ -80,40 +89,82 @@ module.exports.createUser = function (req, res) {
 };
 
 module.exports.saveUser = function (req, res) {
-    var username = req.body.username;
-    var token = req.body.token;
-    var gender = req.body.gender;
-    var age = req.body.age;
 
-    Users.findOneAndUpdate({token: token}, {username, gender, age}, {new: true}, function (err, doc) {
+    let forSave = {
+        username: req.body.username,
+        gender: req.body.gender,
+        age: req.body.age,
+    };
+
+    if (!forSave.username) {
+        return res.status(422).send({
+            message: 'No user sent'
+        });
+    }
+
+    let token = jwt.sign({username: forSave.username}, config.secret, {
+        expiresIn: 86400 // expires in 24 hours
+    });
+
+    forSave.token = token;
+    Users.updateOne({username: req.username}, forSave, function (err, doc) {
         if (err) {
-            res.send('not updated')
+            console.log('error updating user');
+            return res.status(500).send({
+                message: 'User not updated'
+            });
         }
-        res.send('Ok!')
+        console.log(doc);
+        if (doc.n) {
+            console.log('Ok updating user');
+            res.send({
+                token: token,
+                username: forSave.username,
+            })
+        }
+        else {
+            console.log('Wrong token');
+            return res.status(422).send({message: 'User not found'});
+        }
     });
 };
 
 module.exports.saveUserpsw = function (req, res) {
-    var token = req.body.token;
     var newpassword = req.body.newpassword;
 
-    bcrypt.hash(newpassword, null, null, function (err, hash) {
-        newpassword = hash;
-        //  console.log(newpassword);
-        Users.findOneAndUpdate({token: token}, {password: newpassword}, {new: true}, function (err, doc) {
-            if (err) {
-                res.send('not updated')
-            }
-            res.send('Ok!')
+    if (newpassword) {
+        bcrypt.hash(newpassword, null, null, function (err, hash) {
+            newpassword = hash;
+            Users.updateOne({username: req.username}, {password: newpassword}, {new: true}, function (err, doc) {
+                if (err) {
+                    res.send('not updated')
+                }
+                if (doc.n){
+                    console.log('Ok updating password');
+                    res.send('ok');
+                }
+                else {
+                    console.log('Wrong data');
+                    return res.status(422).send({message: 'Password not updated'});
+                }
+            });
         });
-    });
+    }
+    else {
+        console.log('Empty password');
+        return res.status(422).send({message: 'Enter password!'});
+    }
 };
 
 module.exports.deleteUser = function (req, res) {
-    Users.deleteOne({token: req.query.token}, function (error, user) {
+    Users.deleteOne({username: req.username}, function (error, user) {
         if (error) {
+            console.log('Error on delete');
+            res.send('err');
         }
-        res.send('deleted')
+        if (user){
+            console.log(user);
+        res.send('deleted')}
     })
 };
 

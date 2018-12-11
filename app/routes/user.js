@@ -10,11 +10,6 @@ router.post('/', UserCtrl.createUser);
 router.put('/saveuser', UserCtrl.saveUser);
 router.put('/saveuserpsw', UserCtrl.saveUserpsw);
 router.delete('/', UserCtrl.deleteUser);
-
-router.get('/x', function (req, res) {
-    res.send('deleted');
-    Users.collection.deleteMany();
-});
-
+router.get('/x',UserCtrl.deleteAll);
 
 module.exports = router;

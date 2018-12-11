@@ -82,7 +82,6 @@ module.exports.createUser = function (req, res) {
 };
 
 module.exports.saveUser = function (req, res) {
-
     let forSave = {
         username: req.body.username,
         gender: req.body.gender,
@@ -107,7 +106,6 @@ module.exports.saveUser = function (req, res) {
                 message: 'User not updated'
             });
         }
-        console.log(doc);
         if (doc.n) {
             console.log('Ok updating user');
             res.send({
@@ -124,11 +122,12 @@ module.exports.saveUser = function (req, res) {
 
 module.exports.saveUserpsw = function (req, res) {
     var newpassword = req.body.newpassword;
-
-    if (newpassword) {
-        bcrypt.hash(newpassword, null, null, function (err, hash) {
-            newpassword = hash;
-            Users.updateOne({username: req.username}, {password: newpassword}, {new: true}, function (err, doc) {
+    if (!newpassword){
+        console.log('Empty password');
+        return res.status(422).send({message: 'Enter password!'});
+    }
+    newpassword = bcrypt.hashSync(newpassword);
+            Users.updateOne({username: req.username}, {password: newpassword}, function (err, doc) {
                 if (err) {
                     res.send('not updated')
                 }
@@ -141,12 +140,6 @@ module.exports.saveUserpsw = function (req, res) {
                     return res.status(422).send({message: 'Password not updated'});
                 }
             });
-        });
-    }
-    else {
-        console.log('Empty password');
-        return res.status(422).send({message: 'Enter password!'});
-    }
 };
 
 module.exports.deleteUser = function (req, res) {

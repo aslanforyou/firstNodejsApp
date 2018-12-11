@@ -11,10 +11,10 @@ function validation(req, res, next) {
             });
         }
     }
-    if (!["Мужской", 'Пол (не обязательно)', ' - ', 'Женский', 'не указан'].includes(req.body.gender)) {
+    if (!["Мужской", 'Женский', ' - '].includes(req.body.gender)) {
         return res.status(422).send({
             message: 'wrong gender, enter one of "Мужской", " - ", "Женский"'
-        });
+        })
     }
     next();
 }

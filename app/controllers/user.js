@@ -59,13 +59,6 @@ module.exports.createUser = function (req, res) {
     var gender = req.body.gender;
     var age = req.body.age;
 
-    if (!gender) {
-        gender = 'не указан'
-    }
-    if (!age) {
-        age = '0'
-    }
-
     password = bcrypt.hashSync(password);
 
     Users.updateOne({username: user_name}, {password: password, age: age, gender: gender}, function (err, raw) {

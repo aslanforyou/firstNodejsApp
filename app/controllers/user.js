@@ -3,11 +3,11 @@ const jwt = require('jsonwebtoken');
 const Users = require('../models/user');
 const config = require('../../config/config');
 
-module.exports.getUser = function (req, res,next) {
+module.exports.getUser = function (req, res, next) {
 
     Users.findOne({username: req.username}, function (error, user) {
         if (error) {
-            console.log('....error getting user');
+            console.log('...error getting user');
         }
         res.send({
             username: user.username,
@@ -30,14 +30,15 @@ module.exports.loginUser = function (req, res) {
         else {
             if (bcrypt.compareSync(password, user.password)) {
 
-                var token = jwt.sign({ username: user_name }, config.secret, {
+                var token = jwt.sign({username: user_name}, config.secret, {
                     expiresIn: 86400 // expires in 24 hours
                 });
                 Users.updateOne({username: user_name}, {token: token}, function (err, raw) {
                     if (err) return handleError(err);
                     res.json({
                         data: 'yes',
-                        token: token})
+                        token: token
+                    })
                 });
             }
             else {
@@ -53,14 +54,14 @@ module.exports.createUser = function (req, res) {
     var gender = req.body.gender;
     var age = req.body.age;
 
-    if (!gender) {gender = 'не указан'}
-    if (!age) {age = 'не указан'}
+    if (!gender) {
+        gender = 'не указан'
+    }
+    if (!age) {
+        age = 'не указан'
+    }
 
-    // bcrypt.hashSync(password, null, null, function(err, hash) {
-    //     password = hash;
-    // });
-    var hash = bcrypt.hashSync (password);
-    password = hash;
+    password = bcrypt.hashSync(password);
 
     Users.updateOne({username: user_name}, {password: password, age: age, gender: gender}, function (err, raw) {
         if (err) return handleError(err);
@@ -73,33 +74,9 @@ module.exports.createUser = function (req, res) {
             res.json({data: 'yes',});
         }
         else {
-            res.json({ data: 'exists',});
+            res.json({data: 'exists',});
         }
     });
-
-    // Users.findOne({username: user_name}, function (error, user) {
-    //     if (error) {
-    //     }
-    //     if (user == null) {
-    //         var userNew = new Users({username: user_name, password: password, age: age, gender: gender});
-    //         userNew.save(function (err, userNew) {
-    //             if (err) return console.error(err);
-    //         });
-    //         res.json({
-    //             data: 'yes',
-    //         })
-    //     }
-    //     else {
-    //         Users.updateOne({username: user_name}, {password: password, age: age, gender: gender}, function (err, raw) {
-    //             if (err) return handleError(err);
-    //             console.log('The raw response from Mongo was ', raw);
-    //
-    //             res.json({
-    //                 data: 'exists',
-    //             })
-    //         });
-    //     }
-    // });
 };
 
 module.exports.saveUser = function (req, res) {
@@ -108,7 +85,7 @@ module.exports.saveUser = function (req, res) {
     var gender = req.body.gender;
     var age = req.body.age;
 
-    Users.findOneAndUpdate({ token: token }, { username,gender,age } , { new: true }, function(err, doc) {
+    Users.findOneAndUpdate({token: token}, {username, gender, age}, {new: true}, function (err, doc) {
         if (err) {
             res.send('not updated')
         }
@@ -116,23 +93,23 @@ module.exports.saveUser = function (req, res) {
     });
 };
 
-module.exports.saveUserpsw = function (req, res){
-var token = req.body.token;
-var newpassword = req.body.newpassword;
+module.exports.saveUserpsw = function (req, res) {
+    var token = req.body.token;
+    var newpassword = req.body.newpassword;
 
-bcrypt.hash(newpassword, null, null, function(err, hash) {
-    newpassword = hash;
-    //  console.log(newpassword);
-    Users.findOneAndUpdate({token: token}, {password: newpassword}, {new: true}, function (err, doc) {
-        if (err) {
-            res.send('not updated')
-        }
-        res.send('Ok!')
+    bcrypt.hash(newpassword, null, null, function (err, hash) {
+        newpassword = hash;
+        //  console.log(newpassword);
+        Users.findOneAndUpdate({token: token}, {password: newpassword}, {new: true}, function (err, doc) {
+            if (err) {
+                res.send('not updated')
+            }
+            res.send('Ok!')
+        });
     });
-});
 };
 
-module.exports.deleteUser = function (req, res){
+module.exports.deleteUser = function (req, res) {
     Users.deleteOne({token: req.query.token}, function (error, user) {
         if (error) {
         }

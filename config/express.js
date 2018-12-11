@@ -12,8 +12,8 @@ db.once('open', function () {
     // we're connected!
 });
 
-module.exports = function(app){
-   require('../app/routes/index')(app);
+module.exports = function (app) {
+    require('../app/routes/index')(app);
 
     return {
         port,

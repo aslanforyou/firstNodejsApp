@@ -1,4 +1,3 @@
-const bcrypt = require('bcrypt-nodejs');
 const jwt = require('jsonwebtoken');
 const Users = require('../models/user');
 const config = require('../../config/config');
@@ -24,42 +23,23 @@ module.exports.getUser = function (req, res, next) {
 
 module.exports.loginUser = function (req, res) {
     var user_name = req.body.username;
-    var password = req.body.password;
-
-    Users.findOne({username: user_name}, function (error, user) {
-        if (error) {
-        }
-        if (user == null) {
-            res.send('no');
-        }
-        else {
-            if (bcrypt.compareSync(password, user.password)) {
-
-                var token = jwt.sign({username: user_name}, config.secret, {
-                    expiresIn: 86400 // expires in 24 hours
-                });
-                Users.updateOne({username: user_name}, {token: token}, function (err, raw) {
-                    if (err) return handleError(err);
-                    res.json({
-                        data: 'yes',
-                        token: token
-                    })
-                });
-            }
-            else {
-                res.send('wrong psw');
-            }
-        }
+    var token = jwt.sign({username: user_name}, config.secret, {
+        expiresIn: 86400 // expires in 24 hours
+    });
+    Users.updateOne({username: user_name}, {token: token}, function (err, raw) {
+        if (err) return handleError(err);
+        res.json({
+            data: 'yes',
+            token: token
+        })
     });
 };
 
 module.exports.createUser = function (req, res) {
     var user_name = req.body.username;
-    var password = req.body.password;
+    var password = req.password; //from pswCreate
     var gender = req.body.gender;
     var age = req.body.age;
-
-    password = bcrypt.hashSync(password);
 
     Users.updateOne({username: user_name}, {password: password, age: age, gender: gender}, function (err, raw) {
         if (err) return handleError(err);
@@ -121,25 +101,19 @@ module.exports.saveUser = function (req, res) {
 };
 
 module.exports.saveUserpsw = function (req, res) {
-    var newpassword = req.body.newpassword;
-    if (!newpassword){
-        console.log('Empty password');
-        return res.status(422).send({message: 'Enter password!'});
-    }
-    newpassword = bcrypt.hashSync(newpassword);
-            Users.updateOne({username: req.username}, {password: newpassword}, function (err, doc) {
-                if (err) {
-                    res.send('not updated')
-                }
-                if (doc.n){
-                    console.log('Ok updating password');
-                    res.send('ok');
-                }
-                else {
-                    console.log('Wrong data');
-                    return res.status(422).send({message: 'Password not updated'});
-                }
-            });
+    Users.updateOne({username: req.username}, {password: req.password}, function (err, doc) {
+        if (err) {
+            res.send('not updated')
+        }
+        if (doc.n) {
+            console.log('Ok updating password');
+            res.send('ok');
+        }
+        else {
+            console.log('Wrong data');
+            return res.status(422).send({message: 'Password not updated'});
+        }
+    });
 };
 
 module.exports.deleteUser = function (req, res) {

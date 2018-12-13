@@ -10,6 +10,7 @@ function VerifyToken(req, res, next) {
     jwt.verify(token, config.secret, function(err, decoded) {
         if (err){return res.status(500).send({ auth: false, message: 'expired' });}
         req.username = decoded.username;
+        req.userId = decoded.userId;
         next();
     });
 }

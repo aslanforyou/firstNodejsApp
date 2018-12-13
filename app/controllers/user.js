@@ -23,11 +23,15 @@ module.exports.getUser = function (req, res, next) {
 
 module.exports.loginUser = function (req, res) {
     var user_name = req.body.username;
-    var token = jwt.sign({username: user_name}, config.secret, {
+
+    var token = jwt.sign({username: user_name, userId: req.user._id}, config.secret, {
         expiresIn: 86400 // expires in 24 hours
     });
+
     Users.updateOne({username: user_name}, {token: token}, function (err, raw) {
-        if (err) return handleError(err);
+        if (err){
+            return handleError(err);
+        }
         res.json({
             data: 'yes',
             token: token

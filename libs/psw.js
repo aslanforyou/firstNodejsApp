@@ -17,6 +17,7 @@ function passwordCheck(req, res, next) {
             console.log('no password match');
             return res.send('wrong psw');
         }
+        req.user = user;
         next();
     });
 }

@@ -5,7 +5,7 @@ const roomSchema = new mongoose.Schema({
     roomName:{
         type: String,
     },
-    homeName: {
+    homeId: {
         type: Schema.Types.ObjectId, ref: 'Homes'
     },
     userId: {

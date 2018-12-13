@@ -40,3 +40,21 @@ module.exports.getHome = function(req, res){
     });
 
 };
+
+module.exports.deleteHome = function (req, res) {
+
+    let homeId = req.body.homeId;
+    console.log(homeId);
+
+    homeModel.deleteOne({_id: homeId}, function (error, home) {
+        if (error) {
+            console.log('Error on delete');
+            res.send('err');
+        }
+        if (home) {
+            console.log(home);
+            res.send('deleted')
+        }
+    })
+
+};

@@ -7,6 +7,7 @@ const userId = require('../../libs/userId');
 
 router.get('/',  auth.bearerAuth, HomesCtrl.getHome);
 router.post('/', auth.bearerAuth, HomesCtrl.createHome);
+router.post('/delete', auth.bearerAuth, HomesCtrl.deleteHome);
 
 router.post('/room',  RoomsCtrl.getRoom);
 router.post('/newroom', auth.bearerAuth, RoomsCtrl.createRoom);

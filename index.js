@@ -2,7 +2,7 @@ const express = require('express');
 const app = express();
 const config = require('./config/express')(app);
 
-const userRouter = require('./app/routes/index');
+//const userRouter = require('./app/routes/index');
 
 app.get('/', function (req, res) {
     res.send('Hello World!')

@@ -12,6 +12,8 @@ module.exports.createHome = function (req,res) {
         homeModel.updateOne({_id:homeId}, {homeName}, function (err, raw) {
             if (err) console.log('error');
             console.log(raw);
+
+            res.send('yes');
         });
     }
     else {
@@ -19,7 +21,7 @@ module.exports.createHome = function (req,res) {
             if (err) {
                 return console.error('error creating home');
             }
-            console.log(home);
+        //    console.log(home);
             res.send(home._id);
         });
     }
@@ -32,8 +34,6 @@ module.exports.getHome = function(req, res){
         if (err) {
             return handleError(err);
         }
-        // console.log(homes);
-
             res.json({
               homes
             })

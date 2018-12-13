@@ -34,15 +34,12 @@ module.exports.createRoom = function(req, res){
  };
 
 module.exports.getRoom = function(req, res){
-    console.log(req);
-
 
     Rooms.find({ homeId: req.body.homeId})
         .exec(function (err, rooms) {
             if (err) {
                 return handleError(err);
             }
-            console.log(rooms);
 
             res.send(rooms)
         });

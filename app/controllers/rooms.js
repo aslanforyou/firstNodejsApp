@@ -14,23 +14,30 @@ module.exports.createRoom = function(req, res){
     let homeId = req.body.homeId;
     let roomId = req.body.roomId;
 
-    if (roomId) {
+
        Rooms.updateOne({_id:roomId}, {roomName}, function (err, raw) {
            if (err) console.log('error');
-           console.log(raw);
+           console.log(roomId);
+
+           if (raw.n) {
+               res.send('yes');
+           }
+           else {
+               Rooms.create({roomName: roomName, homeId: homeId, userId: req.userId}, function (err, room) {
+                   if (err) {
+                       return console.error('error creating room');
+                   }
+                   res.send(room._id);
+                   homeModel.update({_id: homeId}, {$addToSet: {rooms: room._id}}, function (err, raw) {
+                       if (err) return handleError(err);
+                       console.log('The raw response from Mongo was ', raw);
+
+                   })
+               });
+           }
+
        });
-    }
-     else {
-        Rooms.create({roomName: roomName, homeId: homeId, userId: req.userId}, function (err, room) {
-            if (err) {
-                return console.error('asdasdasdasd');
-            }
-            homeModel.update({_id: homeId}, {$addToSet: {rooms: room._id}}, function (err, raw) {
-                if (err) return handleError(err);
-                console.log('The raw response from Mongo was ', raw);
-            })
-        });
-     }
+
  };
 
 module.exports.getRoom = function(req, res){
@@ -38,10 +45,30 @@ module.exports.getRoom = function(req, res){
     Rooms.find({ homeId: req.body.homeId})
         .exec(function (err, rooms) {
             if (err) {
-                return handleError(err);
+                return res.send("error finding home");
             }
 
             res.send(rooms)
         });
+
+};
+
+module.exports.deleteRoom = function (req, res) {
+
+    let roomId = req.body.roomId;
+
+    Rooms.deleteOne({_id: roomId}, function (error, room) {
+        if (error) {
+            console.log('Error on delete');
+            res.send('err');
+        }
+        if (room) {
+            homeModel.update({rooms: roomId}, { $pull: {rooms: roomId} }, function (err, raw) {
+                if (err) return handleError(err);
+                console.log('The raw response from Mongo was ', raw);
+            });
+            res.send('deleted')
+        }
+    })
 
 };

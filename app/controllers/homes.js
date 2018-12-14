@@ -21,7 +21,6 @@ module.exports.createHome = function (req,res) {
             if (err) {
                 return console.error('error creating home');
             }
-        //    console.log(home);
             res.send(home._id);
         });
     }
@@ -32,11 +31,11 @@ module.exports.getHome = function(req, res){
     homeModel.find({ userId: req.userId})
         .exec(function (err, homes) {
         if (err) {
-            return handleError(err);
+            return res.send("error finding home");
         }
             res.json({
               homes
-            })
+            });
     });
 
 };

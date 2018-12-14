@@ -11,7 +11,7 @@ router.post('/delete', auth.bearerAuth, HomesCtrl.deleteHome);
 
 router.post('/room',  RoomsCtrl.getRoom);
 router.post('/newroom', auth.bearerAuth, RoomsCtrl.createRoom);
-
+router.post('/deleteroom', auth.bearerAuth, RoomsCtrl.deleteRoom);
 
 
 

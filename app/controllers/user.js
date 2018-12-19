@@ -45,22 +45,21 @@ module.exports.createUser = function (req, res) {
     var gender = req.body.gender;
     var age = req.body.age;
 
-    Users.updateOne({username: user_name}, {password: password, age: age, gender: gender}, function (err, raw) {
+    Users.findOne({username: user_name}, function (err, raw) {
         if (err) return handleError(err);
-
-        if (raw.n === 0) {
-            Users.create({username: user_name, password: password, age: age, gender: gender},function (err, userNew) {
+        if (raw) {
+            return res.json({data: 'exists',});
+        }
+        else {
+            Users.create({username: user_name, password: password, age: age, gender: gender}, function (err, userNew) {
                 if (err) {
                     console.error(err);
                     return res.status(500).send({
-                    message: 'Wrong data to create user',
-                });}
-
+                        message: 'Wrong data to create user',
+                    });
+                }
                 res.json({data: 'yes',});
             });
-        }
-        else {
-            res.json({data: 'exists',});
         }
     });
 };
@@ -71,13 +70,11 @@ module.exports.saveUser = function (req, res) {
         gender: req.body.gender,
         age: req.body.age,
     };
-
     if (!forSave.username) {
         return res.status(422).send({
             message: 'No user sent'
         });
     }
-
     let token = jwt.sign({username: forSave.username}, config.secret, {
         expiresIn: 86400 // expires in 24 hours
     });
@@ -87,14 +84,15 @@ module.exports.saveUser = function (req, res) {
         if (err) {
             console.log('error updating user');
             return res.status(500).send({
-                message: 'User not updated'
+                message: 'User exists'
             });
         }
         if (doc.n) {
             console.log('Ok updating user');
+
             res.send({
-                token: token,
-                username: forSave.username,
+                // token: token,
+                // username: forSave.username,
             })
         }
         else {
